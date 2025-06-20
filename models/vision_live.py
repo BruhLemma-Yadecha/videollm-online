@@ -9,6 +9,9 @@ from .configuration_live import LiveConfigMixin
 
 def _siglip_vision_encode(vision_model: nn.Module, frames: Tensor, frame_token_cls: bool, frame_token_pooled: tuple,
     mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5], rescale_factor=0.00392156862745098, **kwargs):
+    # move frames to same device as model
+    device = next(vision_model.parameters()).device
+    frames = frames.to(device)
     frames = normalize(frames * rescale_factor, mean=mean, std=std)
     with torch.cuda.amp.autocast(enabled=False):
         vision_outputs = vision_model(frames)
@@ -31,6 +34,9 @@ def _siglip_vision_encode(vision_model: nn.Module, frames: Tensor, frame_token_c
 
 def _clip_vision_encode(vision_model: nn.Module, frames: Tensor, frame_token_cls: bool, frame_token_pooled: tuple,
     mean=OPENAI_CLIP_MEAN, std=OPENAI_CLIP_STD, rescale_factor=0.00392156862745098, **kwargs):
+    # move frames to same device as model
+    device = next(vision_model.parameters()).device
+    frames = frames.to(device)
     frames = normalize(frames * rescale_factor, mean=mean, std=std)
     with torch.cuda.amp.autocast(enabled=False):
         vision_outputs = vision_model(frames)
@@ -53,9 +59,12 @@ def _clip_vision_encode(vision_model: nn.Module, frames: Tensor, frame_token_cls
 
 def build_live_vision(config: LiveConfigMixin):
     model = AutoModel.from_pretrained(config.vision_pretrained).vision_model
+    # ensure the vision model is on the same device as input (e.g., GPU) to avoid dtype/device mismatch
+    if torch.cuda.is_available():
+        model = model.cuda()
     if 'google/siglip-large-patch16-384' == config.vision_pretrained:
-        return model, partial(_siglip_vision_encode, frame_token_cls=config.frame_token_cls, frame_token_pooled=config.frame_token_pooled)
+        return model, partial(_siglip_vision_encode, frame_token_cls=config.frame_token_cls, frame_token_pooled=tuple(config.frame_token_pooled))
     elif 'laion/CLIP-ViT-L-14-DataComp.XL-s13B-b90k' == config.vision_pretrained or 'openai/clip-vit-large-patch14-336' == config.vision_pretrained:
-        return model, partial(_clip_vision_encode, config)
+        return model, partial(_clip_vision_encode, frame_token_cls=config.frame_token_cls, frame_token_pooled=tuple(config.frame_token_pooled))
     else:
         raise ValueError(f'Unverified vision_pretrained: {config.vision_pretrained}')
