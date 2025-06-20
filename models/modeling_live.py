@@ -23,6 +23,7 @@ class LiveMixin(AutoModelForCausalLM):
             with torch.cuda.amp.autocast():
                 frames = self.vision_encode(self.vision_encoder, frames)
             frames = frames.to(self.dtype)
+        self.connector.to(frames.device)
         frames = self.connector(frames)
         return frames.view(-1, frames.shape[-1])
 
