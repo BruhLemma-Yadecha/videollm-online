@@ -10,7 +10,7 @@ from .configuration_live import LiveConfigMixin
 def _siglip_vision_encode(vision_model: nn.Module, frames: Tensor, frame_token_cls: bool, frame_token_pooled: tuple,
     mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5], rescale_factor=0.00392156862745098, **kwargs):
     frames = normalize(frames * rescale_factor, mean=mean, std=std)
-    with torch.cuda.amp.autocast():
+    with torch.cuda.amp.autocast(enabled=False):
         vision_outputs = vision_model(frames)
         last_hidden_state = vision_outputs.last_hidden_state
         if frame_token_pooled:
@@ -32,7 +32,7 @@ def _siglip_vision_encode(vision_model: nn.Module, frames: Tensor, frame_token_c
 def _clip_vision_encode(vision_model: nn.Module, frames: Tensor, frame_token_cls: bool, frame_token_pooled: tuple,
     mean=OPENAI_CLIP_MEAN, std=OPENAI_CLIP_STD, rescale_factor=0.00392156862745098, **kwargs):
     frames = normalize(frames * rescale_factor, mean=mean, std=std)
-    with torch.cuda.amp.autocast():
+    with torch.cuda.amp.autocast(enabled=False):
         vision_outputs = vision_model(frames)
         last_hidden_state = vision_outputs.last_hidden_state
         if frame_token_pooled:

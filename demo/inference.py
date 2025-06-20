@@ -12,8 +12,17 @@ logger = transformers.logging.get_logger('liveinfer')
 class LiveInfer:
     def __init__(self, ) -> None:
         args = parse_args()
-        self.model, self.tokenizer = build_model_and_tokenizer(is_training=False, set_vision_inside=True, **asdict(args))
-        self.model.to('cuda')
+        
+        def get_device_map() -> str:
+            return 'cuda' if torch.cuda.is_available() else 'cpu'
+
+        device = get_device_map()
+        print('-----------------------On device', device, '-----------------------')
+
+        self.model, self.tokenizer = build_model_and_tokenizer(is_training=False, set_vision_inside=True, device_map=device, **asdict(args))
+        
+        
+        # self.model.to('cuda')
         
         # visual
         self.hidden_size = self.model.config.hidden_size
