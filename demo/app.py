@@ -32,7 +32,8 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
                 examples=[["demo/assets/cooking.mp4"], ["demo/assets/bicycle.mp4"], ["demo/assets/egoexo4d.mp4"]],
                 inputs=gr_video,
                 outputs=gr_video,
-                label="Examples"
+                label="Examples",
+                cache_examples=False,
             )
             gr.Markdown("## Tips:")
             gr.Markdown("- When you upload/click a video, the model starts processing the video stream. You can input a query before or after that, at any point during the video as you like.")
