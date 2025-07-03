@@ -13,7 +13,7 @@ class LiveInfer:
     def __init__(self, ) -> None:
         args = parse_args()
         self.model, self.tokenizer = build_model_and_tokenizer(is_training=False, set_vision_inside=True, **asdict(args))
-        self.model.to('cuda')
+        self.model = self.model.to_empty(device='cuda')
         
         # visual
         self.hidden_size = self.model.config.hidden_size
