@@ -102,10 +102,22 @@ class LiveInfer:
     def input_video_stream(self, video_time):
         frame_idx = int(video_time * self.frame_fps)
         if frame_idx >= self.num_video_frames:
-            print(f'frame_idx ({frame_idx}) is out of bounds ({self.num_video_frames}). Skipping frame.')
+            print(f'[ERROR] frame_idx ({frame_idx}) is out of bounds ({self.num_video_frames}). Skipping frame.')
             return
         if frame_idx > self.last_frame_idx:
             ranger = range(self.last_frame_idx + 1, frame_idx + 1)
+            
+            # build the list of frame indices we’re about to pull
+            idxs = list(ranger)
+
+            #––– DEBUG: assert none of these go past the end of video_tensor –––
+            max_idx = max(idxs)
+            total = self.video_tensor.shape[0]  # number of frames available
+            print(f"[DEBUG] selecting frames {idxs[0]}→{idxs[-1]}, total frames = {total}")
+            assert max_idx < total, (
+                f"[ERROR] Index out of range! max(idxs)={max_idx} >= video_tensor.shape[0]={total}"
+            )
+            
             frames_embeds = self.model.visual_embed(self.video_tensor[ranger]).split(self.frame_num_tokens)
             self.frame_embeds_queue.extend([(r / self.frame_fps, frame_embeds) for r, frame_embeds in zip(ranger, frames_embeds)])
         self.last_frame_idx = frame_idx
