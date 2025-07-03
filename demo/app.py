@@ -47,9 +47,11 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
                     elem_id="gr_chatbot",
                     label='chatbot',
                     avatar_images=('demo/user_avatar.png', 'demo/assistant_avatar.png'),
-                    render=False
+                    render=False,
+                    type='messages'
                 ),
                 examples=['Please narrate the video in real time.', 'Please describe what I am doing.', 'Could you summarize what have been done?', 'Hi, guide me the next step.'],
+                type='messages'
             )
             
             def gr_frame_token_interval_threshold_change(frame_token_interval_threshold):
