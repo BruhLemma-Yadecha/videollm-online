@@ -101,6 +101,9 @@ class LiveInfer:
     
     def input_video_stream(self, video_time):
         frame_idx = int(video_time * self.frame_fps)
+        if frame_idx >= self.num_video_frames:
+            print(f'frame_idx ({frame_idx}) is out of bounds ({self.num_video_frames}). Skipping frame.')
+            return
         if frame_idx > self.last_frame_idx:
             ranger = range(self.last_frame_idx + 1, frame_idx + 1)
             frames_embeds = self.model.visual_embed(self.video_tensor[ranger]).split(self.frame_num_tokens)
