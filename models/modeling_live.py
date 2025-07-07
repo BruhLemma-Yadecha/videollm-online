@@ -197,7 +197,14 @@ def build_live(
     torch_dtype: str | torch.dtype = 'auto',
     **kwargs
 ):
-    model = model_class.from_pretrained(llm_pretrained, config=config_class.from_pretrained(llm_pretrained, **kwargs), torch_dtype=torch_dtype, attn_implementation=attn_implementation)
+    config = config_class.from_pretrained(llm_pretrained, **kwargs)
+    model = model_class.from_pretrained(
+        llm_pretrained,
+        config=config,
+        torch_dtype=torch_dtype,
+        attn_implementation=attn_implementation,
+        device_map="cuda"
+    )
     tokenizer = build_live_tokenizer_and_update_config(llm_pretrained, model.config)
     if is_training:
         lora_config = LoraConfig(
